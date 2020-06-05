@@ -4,7 +4,6 @@ import { emptyCart } from './cartHelpers';
 import Card from './card';
 import { isauthenticated } from '../auth';
 import { Link } from 'react-router-dom';
-// import "braintree-web"; // not using this package
 import DropIn from 'braintree-web-drop-in-react';
 
 const Checkout = ({ products, setRun = f => f, run = undefined }) => {
@@ -14,7 +13,8 @@ const Checkout = ({ products, setRun = f => f, run = undefined }) => {
         clientToken: null,
         error: '',
         instance: {},
-        address: ''
+        address: '',
+        btndisable: false
     });
 
     const userId = isauthenticated() && isauthenticated().user._id;
@@ -59,8 +59,8 @@ const Checkout = ({ products, setRun = f => f, run = undefined }) => {
     let deliveryAddress = data.address;
 
     const buy = (e) => {
-        e.preventDefault();
-        setData({ loading: true });
+        // e.preventDefault();
+        setData({ loading: true ,btndisable:true});
         // send the nonce to your server
         // nonce = data.instance.requestPaymentMethod()
         let nonce;
@@ -101,7 +101,8 @@ const Checkout = ({ products, setRun = f => f, run = undefined }) => {
                                     console.log('payment success and empty cart');
                                     setData({
                                         loading: false,
-                                        success: true
+                                        success: true,
+                                        btndisable:false
                                     });
                                 });
                             })
@@ -139,19 +140,20 @@ const Checkout = ({ products, setRun = f => f, run = undefined }) => {
                         options={{
                             authorization: data.clientToken,
                             // paypal: {
-                            //     flow: 'vault'
-                            // }
-                        }}
-                        onInstance={instance => (data.instance = instance)}
-                    />
-                    <button onClick={buy} className="btn btn-success btn-block">
+                                //     flow: 'vault'
+                                // }
+                            }}
+                            onInstance={instance => (data.instance = instance)}
+                            />
+                    <button disabled={data.btndisable}   onClick={buy} className="btn btn-success btn-block">
                         Pay
                     </button>
                 </div>
             ) : null}
         </div>
     );
-
+    
+    
     const showError = error => (
         <div className="alert alert-danger" style={{ display: error ? '' : 'none' }}>
             {error}
@@ -166,6 +168,7 @@ const Checkout = ({ products, setRun = f => f, run = undefined }) => {
 
     const showLoading = loading => loading && <h2 className="text-danger">Loading...</h2>;
 
+    
     return (
         <div>
             <h2>Total: ${getTotal()}</h2>
